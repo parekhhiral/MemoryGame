@@ -3,7 +3,11 @@ package com.parekhhiral.memorygame
 import android.animation.ArgbEvaluator
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
@@ -39,7 +43,51 @@ class MainActivity : AppCompatActivity() {
         setupBoard()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.refresh_menu -> {
+                if (game.getMoves() > 0 && !game.haveWonGame()) {
+                    showAlertDialog("Quit your current game?", null, View.OnClickListener {
+                        setupBoard()
+                    })
+                } else {
+                    setupBoard()
+                }
+                true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun showAlertDialog(title: String, view: View?, positiveClickListener: View.OnClickListener) {
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setView(view)
+            .setNegativeButton(getString(android.R.string.cancel), null)
+            .setPositiveButton(getString(android.R.string.ok), {_,_ -> positiveClickListener.onClick(null)})
+            .show()
+    }
+
     private fun setupBoard() {
+        when(boardSize) {
+            BoardSize.EASY -> {
+                numMoves.text = "EASY : 4 x 2"
+                numPairs.text = "Pairs : 0 / 4"
+            }
+            BoardSize.MEDIUM -> {
+                numMoves.text = "Medium : 6 x 3"
+                numPairs.text = "Pairs : 0 / 9"
+            }
+            BoardSize.HARD -> {
+                numMoves.text = "Hard : 6 x 4"
+                numPairs.text = "Pairs : 0 / 12"
+            }
+        }
         game = Game(boardSize)
         adapter = MemoryGameAdapter(this, boardSize, game.cards,
             object : MemoryGameAdapter.CardClickListener {
